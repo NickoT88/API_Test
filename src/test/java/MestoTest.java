@@ -1,5 +1,4 @@
 import io.qameta.allure.Description;
-import io.qameta.allure.Step;
 import io.qameta.allure.junit4.DisplayName;
 import io.restassured.RestAssured;
 import org.junit.Before;
@@ -8,13 +7,14 @@ import org.junit.Test;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
 
-public class Mesto1Test {
-
+public class MestoTest {
     String bearerToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2Mzk4YjU0NGQzYjg2YTAwM2Q2N2UzNjgiLCJpYXQiOjE2NzY2NDk3MTQsImV4cCI6MTY3NzI1NDUxNH0.Li9gjyUG_I_n5YTJhGD1sKJ9oGal9ukYBg6utsEdgTI";
+    private Steps step;
 
     @Before
     public void setUp() {
         RestAssured.baseURI = "https://qa-mesto.praktikum-services.ru";
+        step = new Steps();
     }
 
     @Test
@@ -33,10 +33,10 @@ public class Mesto1Test {
     @DisplayName("Like the first photo")
     @Description("This test is for liking the first photo on Mesto.")
     public void likeTheFirstPhoto() {
-        String photoId = getTheFirstPhotoId();
+        String photoId = step.getTheFirstPhotoId();
 
-        likePhotoById(photoId);
-        deleteLikePhotoById(photoId);
+        step.likePhotoById(photoId);
+        step.deleteLikePhotoById(photoId);
     }
 
     @Test
@@ -49,31 +49,5 @@ public class Mesto1Test {
                 .then().assertThat().body("data.name", equalTo("Incorrect Name")); // Проверяем, что имя соответствует ожидаемому
     }
 
-    @Step("Take the first photo from the list")
-    private String getTheFirstPhotoId() {
-        // Получение списка фотографий и выбор первой из него
-        return given()
-                .auth().oauth2(bearerToken) // Передаём токен для аутентификации
-                .get("/api/cards") // Делаем GET-запрос
-                .then().extract().body().path("data[0]._id"); // Получаем ID фотографии из массива данных
-    }
-
-    @Step("Like a photo by id")
-    private void likePhotoById(String photoId) {
-        // Лайк фотографии по photoId
-        given()
-                .auth().oauth2(bearerToken) // Передаём токен для аутентификации
-                .put("/api/cards/{photoId}/likes", photoId) // Делаем PUT-запрос
-                .then().assertThat().statusCode(200); // Проверяем, что сервер вернул код 200
-    }
-
-    @Step("Delete like from the photo by id")
-    private void deleteLikePhotoById(String photoId) {
-        // Снять лайк с фотографии по photoId
-        given()
-                .auth().oauth2(bearerToken) // Передаём токен для аутентификации
-                .delete("/api/cards/{photoId}/likes", photoId) // Делаем DELETE-запрос
-                .then().assertThat().statusCode(200); // Проверяем, что сервер вернул код 200
-    }
 
 } 
